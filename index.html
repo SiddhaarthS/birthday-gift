@@ -10,7 +10,7 @@
     
     <style>
         :root {
-            /* --- DESKTOP VARIABLES (Wide Book) --- */
+            /* --- DESKTOP VARIABLES --- */
             --book-width: 70vw; 
             --book-height: 39.375vw; /* 16:9 Ratio */
             --page-bg: #fdfbf7;
@@ -32,7 +32,7 @@
             position: relative;
         }
 
-        /* --- GLOBAL STYLES --- */
+        /* --- STYLES --- */
         .sticker {
             position: absolute;
             opacity: 0.8;
@@ -41,10 +41,20 @@
             filter: contrast(110%);
         }
 
+        /* Paper Balls */
+        .paper-ball {
+            position: absolute;
+            pointer-events: none;
+            z-index: 0; 
+            filter: drop-shadow(10px 15px 20px rgba(0,0,0,0.5)); 
+            opacity: 0.9;
+        }
+
         .scene {
             width: var(--book-width);
             height: var(--book-height);
             perspective: 2000px;
+            z-index: 10; 
         }
 
         .book {
@@ -52,7 +62,7 @@
             height: 100%;
             position: relative;
             transform-style: preserve-3d;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.4); 
         }
 
         .page {
@@ -95,7 +105,6 @@
         .back { transform: rotateY(180deg); background-color: #f8f5f0; z-index: 1; border-right: 1px solid #ccc; }
         .flipped { transform: rotateY(-180deg); }
 
-        /* --- TYPOGRAPHY & CONTENT --- */
         h1 { margin: 0; font-size: 3vw; color: #444; text-align: center; }
         p.caption { font-size: 1.2vw; color: #666; text-align: center; margin-top: 10px; max-width: 80%; }
         
@@ -160,32 +169,33 @@
             color: #ccc;
         }
 
-        /* --- MOBILE OVERRIDES (The Long Notebook Fix) --- */
+        /* --- MOBILE OVERRIDES --- */
         @media (max-width: 768px) {
             :root {
-                /* TALL ASPECT RATIO FOR MOBILE */
-                --book-width: 95vw;  /* Fill width */
-                --book-height: 120vw; /* Make it TALL (Portrait) */
+                --book-width: 95vw;
+                --book-height: 120vw; /* Tall Portrait */
             }
 
-            /* Fix Fonts (Pixels for readability) */
             h1 { font-size: 28px; }
             p.caption { font-size: 14px; margin-top: 10px; }
             
             .letter-content h2 { font-size: 18px; margin-bottom: 10px; }
             .letter-content p { font-size: 12px; line-height: 1.4; }
             
-            /* Adjust Photo Frame for narrow pages */
-            .photo-frame { 
-                width: 80%; /* Wider frame to fill the narrow page */
-                padding: 5px 5px 20px 5px; 
-            }
+            .photo-frame { width: 80%; padding: 5px 5px 20px 5px; }
             .tape { height: 20px; top: -10px; }
             .page-num { font-size: 10px; bottom: 8px; right: 8px; }
+
+            .paper-ball { transform: scale(0.7); }
         }
     </style>
 </head>
 <body>
+
+    <img src="images/ball.png" class="paper-ball" style="bottom: -5vh; left: -5vw; width: 25vw; transform: rotate(20deg);">
+    <img src="images/ball.png" class="paper-ball" style="top: -10vh; right: -2vw; width: 18vw; transform: rotate(-45deg) scaleX(-1);">
+    <img src="images/ball.png" class="paper-ball" style="bottom: 10vh; right: -8vw; width: 12vw; transform: rotate(90deg);">
+
 
     <div class="scene">
         <div class="book" id="bookContainer">
@@ -221,7 +231,7 @@
         ];
 
         // ==========================================
-        // BUILDER
+        // BOOK BUILDER
         // ==========================================
         const bookContainer = document.getElementById('bookContainer');
         const totalPages = memories.length; 
@@ -299,64 +309,112 @@
         }
 
         // ==========================================
-        // STICKERS
+        // SMART STICKER ENGINE (Capped + Avoids Balls)
         // ==========================================
-        const stickerFiles = [
-            'images/sticker1.png', 'images/sticker2.png', 'images/sticker3.png', 'images/sticker4.png'
+        
+        // 1. Define Sticker Types
+        const stickerTypes = [
+            'images/sticker1.png', 
+            'images/sticker2.png', 
+            'images/sticker3.png', 
+            'images/sticker4.png'
         ];
         
-        const totalStickers = 20; 
+        // 2. Create a "Deck" where each sticker appears exactly 4 times
+        const maxRepetition = 4;
+        let stickerDeck = [];
+        
+        stickerTypes.forEach(src => {
+            for(let i=0; i<maxRepetition; i++) {
+                stickerDeck.push(src);
+            }
+        });
+
+        // 3. Shuffle the deck
+        stickerDeck.sort(() => Math.random() - 0.5);
+
+        // 4. Initialize Collision Zones with Paper Balls
         let placedRects = []; 
+        
+        function initObstacles() {
+            // Find all paper balls and add them to forbidden zones
+            const balls = document.querySelectorAll('.paper-ball');
+            balls.forEach(ball => {
+                const rect = ball.getBoundingClientRect();
+                placedRects.push({
+                    top: rect.top,
+                    left: rect.left,
+                    right: rect.right,
+                    bottom: rect.bottom
+                });
+            });
+        }
 
         function spawnStickers() {
+            initObstacles(); // Load balls into collision system
+
             const body = document.querySelector('body');
             const vw = window.innerWidth;
             const vh = window.innerHeight;
 
-            for (let i = 0; i < totalStickers; i++) {
+            // Iterate through our shuffled deck
+            stickerDeck.forEach(imgSrc => {
                 let attempts = 0;
                 let placed = false;
+
+                // Try 50 times to find a safe spot
                 while (!placed && attempts < 50) {
                     const zone = Math.floor(Math.random() * 4);
                     let topPct, leftPct;
 
+                    // Edge Bias Logic
                     if (zone === 0) { topPct = Math.random() * 15; leftPct = Math.random() * 90; } 
                     else if (zone === 1) { topPct = 80 + Math.random() * 15; leftPct = Math.random() * 90; } 
                     else if (zone === 2) { topPct = Math.random() * 90; leftPct = Math.random() * 15; } 
                     else { topPct = Math.random() * 90; leftPct = 80 + Math.random() * 15; } 
 
-                    const sizeVw = (Math.random() * 7) + 8;
+                    const sizeVw = (Math.random() * 6) + 7; // Slightly smaller stickers
                     const sizePx = (sizeVw / 100) * vw;
                     const topPx = (topPct / 100) * vh;
                     const leftPx = (leftPct / 100) * vw;
 
                     const newRect = { top: topPx, left: leftPx, right: leftPx + sizePx, bottom: topPx + sizePx };
+                    
+                    // Check Collision against STICKERS AND BALLS
                     let collision = false;
                     for (let rect of placedRects) {
-                        if (newRect.left < rect.right && newRect.right > rect.left && newRect.top < rect.bottom && newRect.bottom > rect.top) {
-                            collision = true; break;
+                        // Add buffer (margin) to collision check so they don't touch
+                        const buffer = 10; 
+                        if (newRect.left < rect.right + buffer && 
+                            newRect.right > rect.left - buffer && 
+                            newRect.top < rect.bottom + buffer && 
+                            newRect.bottom > rect.top - buffer) {
+                            collision = true; 
+                            break;
                         }
                     }
 
                     if (!collision) {
                         const img = document.createElement('img');
-                        if(stickerFiles.length > 0) {
-                            img.src = stickerFiles[Math.floor(Math.random() * stickerFiles.length)];
-                            img.classList.add('sticker');
-                            img.style.top = topPct + 'vh';
-                            img.style.left = leftPct + 'vw';
-                            img.style.width = sizeVw + 'vw';
-                            img.style.transform = `rotate(${(Math.random() * 90) - 45}deg)`;
-                            body.appendChild(img);
-                            placedRects.push(newRect);
-                            placed = true;
-                        }
+                        img.src = imgSrc;
+                        img.classList.add('sticker');
+                        img.style.top = topPct + 'vh';
+                        img.style.left = leftPct + 'vw';
+                        img.style.width = sizeVw + 'vw';
+                        img.style.transform = `rotate(${(Math.random() * 90) - 45}deg)`;
+                        
+                        body.appendChild(img);
+                        placedRects.push(newRect);
+                        placed = true;
                     }
                     attempts++;
                 }
-            }
+            });
         }
-        spawnStickers();
+
+        // Wait a split second for layout to settle before calculating ball positions
+        setTimeout(spawnStickers, 100);
+
     </script>
 </body>
 </html>
