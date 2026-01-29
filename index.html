@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>31 Years of Awesome</title>
+    
+    <link rel="icon" href="favicon.png" type="image/png">
+    <link href="https://fonts.googleapis.com/css2?family=Indie+Flower&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            /* --- DESKTOP VARIABLES (Wide Book) --- */
+            --book-width: 70vw; 
+            --book-height: 39.375vw; /* 16:9 Ratio */
+            --page-bg: #fdfbf7;
+        }
+
+        body {
+            background-color: #ffffff;
+            background-image: 
+                linear-gradient(#a3c2e0 1px, transparent 1px),
+                linear-gradient(90deg, #a3c2e0 1px, transparent 1px);
+            background-size: 30px 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: 'Indie Flower', cursive;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* --- GLOBAL STYLES --- */
+        .sticker {
+            position: absolute;
+            opacity: 0.8;
+            pointer-events: none;
+            z-index: -1; 
+            filter: contrast(110%);
+        }
+
+        .scene {
+            width: var(--book-width);
+            height: var(--book-height);
+            perspective: 2000px;
+        }
+
+        .book {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+        }
+
+        .page {
+            width: 50%;
+            height: 100%;
+            position: absolute;
+            right: 0;
+            top: 0;
+            transform-origin: left center;
+            transform-style: preserve-3d;
+            transition: transform 1.2s cubic-bezier(0.645, 0.045, 0.355, 1);
+            cursor: pointer;
+        }
+
+        .face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.1);
+            padding: 20px;
+            box-sizing: border-box;
+            background-color: var(--page-bg);
+        }
+
+        .face::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-image: linear-gradient(to bottom right, rgba(0,0,0,0.05), transparent);
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        .front { transform: rotateY(0deg); z-index: 2; border-left: 1px solid #ddd; }
+        .back { transform: rotateY(180deg); background-color: #f8f5f0; z-index: 1; border-right: 1px solid #ccc; }
+        .flipped { transform: rotateY(-180deg); }
+
+        /* --- TYPOGRAPHY & CONTENT --- */
+        h1 { margin: 0; font-size: 3vw; color: #444; text-align: center; }
+        p.caption { font-size: 1.2vw; color: #666; text-align: center; margin-top: 10px; max-width: 80%; }
+        
+        .letter-content {
+            width: 85%;
+            height: 85%;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start; 
+            align-items: flex-start;
+            overflow: hidden; 
+        }
+
+        .letter-content h2 {
+            font-size: 1.8vw;
+            color: #333;
+            margin: 0 0 1vw 0;
+            width: 100%;
+            text-align: left;
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 5px;
+        }
+
+        .letter-content p {
+            font-size: 1vw; 
+            color: #444;
+            text-align: left; 
+            line-height: 1.5;
+            margin: 0;
+            white-space: pre-wrap; 
+        }
+
+        .photo-frame {
+            background: white;
+            padding: 1vw 1vw 3vw 1vw;
+            box-shadow: 2px 2px 10px rgba(0,0,0,0.2);
+            width: 65%;
+            position: relative;
+            transition: transform 0.3s ease;
+        }
+        
+        .photo-frame img { width: 100%; display: block; pointer-events: none; }
+
+        .tape {
+            position: absolute;
+            top: -1.5vw;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 25%;
+            height: 3vw;
+            background-color: rgba(255, 255, 255, 0.6);
+            border-left: 2px dotted rgba(0,0,0,0.1);
+            border-right: 2px dotted rgba(0,0,0,0.1);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .page-num {
+            position: absolute;
+            bottom: 15px;
+            right: 20px;
+            font-size: 1vw;
+            color: #ccc;
+        }
+
+        /* --- MOBILE OVERRIDES (The Long Notebook Fix) --- */
+        @media (max-width: 768px) {
+            :root {
+                /* TALL ASPECT RATIO FOR MOBILE */
+                --book-width: 95vw;  /* Fill width */
+                --book-height: 120vw; /* Make it TALL (Portrait) */
+            }
+
+            /* Fix Fonts (Pixels for readability) */
+            h1 { font-size: 28px; }
+            p.caption { font-size: 14px; margin-top: 10px; }
+            
+            .letter-content h2 { font-size: 18px; margin-bottom: 10px; }
+            .letter-content p { font-size: 12px; line-height: 1.4; }
+            
+            /* Adjust Photo Frame for narrow pages */
+            .photo-frame { 
+                width: 80%; /* Wider frame to fill the narrow page */
+                padding: 5px 5px 20px 5px; 
+            }
+            .tape { height: 20px; top: -10px; }
+            .page-num { font-size: 10px; bottom: 8px; right: 8px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="scene">
+        <div class="book" id="bookContainer">
+            <div style="position: absolute; right: 0; width: 50%; height: 100%; background: #e3d0b9; z-index: 0; box-shadow: inset 5px 0 10px rgba(0,0,0,0.1);"></div>
+            <div style="position: absolute; left: 0; width: 50%; height: 100%; background: #e3d0b9; z-index: 0; box-shadow: inset -5px 0 10px rgba(0,0,0,0.1);"></div>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // CONTENT
+        // ==========================================
+        const memories = [
+            { type: 'cover', title: 'Happy 31st!', text: 'To my best friend in the world.' },
+            
+            { type: 'photo', img: 'images/photo1.jpg', text: 'Era 1: How it started' },
+            { type: 'photo', img: 'images/photo2.jpg', text: 'Era 2: The Core 4' },
+            { type: 'photo', img: 'images/photo3.jpg', text: 'Era 3: College Days' },
+            { type: 'photo', img: 'images/photo4.jpg', text: 'Era 4: Hiking Adventures' },
+            { type: 'photo', img: 'images/photo5.jpg', text: 'Era 5: Travel Diaries' },
+            { type: 'photo', img: 'images/photo6.jpg', text: 'Era 6: Fan Moments' },
+            { type: 'photo', img: 'images/photo7.jpg', text: 'Era 7: The Party Phase' },
+            { type: 'photo', img: 'images/photo8.jpg', text: 'Era 8: Major Milestones' },
+            { type: 'photo', img: 'images/photo9.jpg', text: 'Era 9: Pure Chaos' },
+            { type: 'photo', img: 'images/photo10.jpg', text: 'Era 10: Here & Now' },
+
+            { type: 'letter', title: 'From [Friend 1]', text: 'Dear Bestie,\n\nHappy 31st!...\n\nLove,\n[Name]' },
+            { type: 'letter', title: 'From [Friend 2]', text: 'Happy Birthday!\n\nYou rock.\n\nCheers,\n[Name]' },
+            { type: 'letter', title: 'From Mom', text: 'My dearest son,\n\nProud of you.\n\nLove,\nMom' },
+            { type: 'letter', title: 'From Dad', text: 'Son,\n\nKeep going.\n\n- Dad' },
+
+            { type: 'cover', title: 'To the future!', text: 'Can\'t wait to celebrate with you.' }
+        ];
+
+        // ==========================================
+        // BUILDER
+        // ==========================================
+        const bookContainer = document.getElementById('bookContainer');
+        const totalPages = memories.length; 
+
+        memories.forEach((memory, index) => {
+            const pageNum = index + 1;
+            const pageDiv = document.createElement('div');
+            pageDiv.classList.add('page');
+            pageDiv.id = `p${pageNum}`;
+            pageDiv.onclick = () => flipPage(pageNum);
+
+            let contentHTML = '';
+            
+            if (memory.type === 'cover') {
+                contentHTML = `
+                    <div class="face front">
+                        <h1>${memory.title}</h1>
+                        <p class="caption">${memory.text}</p>
+                        ${pageNum === 1 ? '<p style="font-size: 12px; margin-top: 30px; opacity: 0.7;">(Tap right side)</p>' : ''}
+                        <div class="page-num">${pageNum}</div>
+                    </div>
+                    <div class="face back"></div>
+                `;
+            } else if (memory.type === 'letter') {
+                contentHTML = `
+                    <div class="face front">
+                        <div class="letter-content">
+                            <h2>${memory.title}</h2>
+                            <p>${memory.text}</p>
+                        </div>
+                        <div class="page-num">${pageNum}</div>
+                    </div>
+                    <div class="face back"></div>
+                `;
+            } else {
+                const rotate = Math.floor(Math.random() * 6) - 3; 
+                contentHTML = `
+                    <div class="face front">
+                        <div class="photo-frame" style="transform: rotate(${rotate}deg);">
+                            <div class="tape"></div>
+                            <img src="${memory.img}" alt="Memory" onerror="this.src='https://picsum.photos/400/300?random=${pageNum}'">
+                        </div>
+                        <p class="caption">${memory.text}</p>
+                        <div class="page-num">${pageNum}</div>
+                    </div>
+                    <div class="face back"></div>
+                `;
+            }
+
+            pageDiv.innerHTML = contentHTML;
+            bookContainer.insertBefore(pageDiv, bookContainer.children[bookContainer.children.length - 2]);
+        });
+
+        // ==========================================
+        // FLIP LOGIC
+        // ==========================================
+        function flipPage(pageNum) {
+            const page = document.getElementById(`p${pageNum}`);
+            const isFlipped = page.classList.contains('flipped');
+
+            if (!isFlipped) {
+                page.classList.add('flipped');
+                setTimeout(() => {
+                    page.style.zIndex = pageNum; 
+                }, 600); 
+            } else {
+                page.style.zIndex = totalPages - pageNum + 1;
+                page.classList.remove('flipped');
+            }
+        }
+
+        for(let i=1; i<=totalPages; i++) {
+            const page = document.getElementById(`p${i}`);
+            page.style.zIndex = totalPages - i + 1;
+        }
+
+        // ==========================================
+        // STICKERS
+        // ==========================================
+        const stickerFiles = [
+            'images/sticker1.png', 'images/sticker2.png', 'images/sticker3.png', 'images/sticker4.png'
+        ];
+        
+        const totalStickers = 20; 
+        let placedRects = []; 
+
+        function spawnStickers() {
+            const body = document.querySelector('body');
+            const vw = window.innerWidth;
+            const vh = window.innerHeight;
+
+            for (let i = 0; i < totalStickers; i++) {
+                let attempts = 0;
+                let placed = false;
+                while (!placed && attempts < 50) {
+                    const zone = Math.floor(Math.random() * 4);
+                    let topPct, leftPct;
+
+                    if (zone === 0) { topPct = Math.random() * 15; leftPct = Math.random() * 90; } 
+                    else if (zone === 1) { topPct = 80 + Math.random() * 15; leftPct = Math.random() * 90; } 
+                    else if (zone === 2) { topPct = Math.random() * 90; leftPct = Math.random() * 15; } 
+                    else { topPct = Math.random() * 90; leftPct = 80 + Math.random() * 15; } 
+
+                    const sizeVw = (Math.random() * 7) + 8;
+                    const sizePx = (sizeVw / 100) * vw;
+                    const topPx = (topPct / 100) * vh;
+                    const leftPx = (leftPct / 100) * vw;
+
+                    const newRect = { top: topPx, left: leftPx, right: leftPx + sizePx, bottom: topPx + sizePx };
+                    let collision = false;
+                    for (let rect of placedRects) {
+                        if (newRect.left < rect.right && newRect.right > rect.left && newRect.top < rect.bottom && newRect.bottom > rect.top) {
+                            collision = true; break;
+                        }
+                    }
+
+                    if (!collision) {
+                        const img = document.createElement('img');
+                        if(stickerFiles.length > 0) {
+                            img.src = stickerFiles[Math.floor(Math.random() * stickerFiles.length)];
+                            img.classList.add('sticker');
+                            img.style.top = topPct + 'vh';
+                            img.style.left = leftPct + 'vw';
+                            img.style.width = sizeVw + 'vw';
+                            img.style.transform = `rotate(${(Math.random() * 90) - 45}deg)`;
+                            body.appendChild(img);
+                            placedRects.push(newRect);
+                            placed = true;
+                        }
+                    }
+                    attempts++;
+                }
+            }
+        }
+        spawnStickers();
+    </script>
+</body>
+</html>
