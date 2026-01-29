@@ -7,6 +7,7 @@
     
     <link rel="icon" href="favicon.png" type="image/png">
     <link href="https://fonts.googleapis.com/css2?family=Indie+Flower&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
     <style>
         :root {
@@ -309,88 +310,58 @@
         }
 
         // ==========================================
-        // SMART STICKER ENGINE (Capped + Avoids Balls)
+        // SMART STICKER ENGINE
         // ==========================================
-        
-        // 1. Define Sticker Types
         const stickerTypes = [
-            'images/sticker1.png', 
-            'images/sticker2.png', 
-            'images/sticker3.png', 
-            'images/sticker4.png'
+            'images/sticker1.png', 'images/sticker2.png', 'images/sticker3.png', 'images/sticker4.png'
         ];
         
-        // 2. Create a "Deck" where each sticker appears exactly 4 times
         const maxRepetition = 4;
         let stickerDeck = [];
-        
         stickerTypes.forEach(src => {
-            for(let i=0; i<maxRepetition; i++) {
-                stickerDeck.push(src);
-            }
+            for(let i=0; i<maxRepetition; i++) { stickerDeck.push(src); }
         });
-
-        // 3. Shuffle the deck
         stickerDeck.sort(() => Math.random() - 0.5);
 
-        // 4. Initialize Collision Zones with Paper Balls
         let placedRects = []; 
-        
         function initObstacles() {
-            // Find all paper balls and add them to forbidden zones
             const balls = document.querySelectorAll('.paper-ball');
             balls.forEach(ball => {
                 const rect = ball.getBoundingClientRect();
-                placedRects.push({
-                    top: rect.top,
-                    left: rect.left,
-                    right: rect.right,
-                    bottom: rect.bottom
-                });
+                placedRects.push({ top: rect.top, left: rect.left, right: rect.right, bottom: rect.bottom });
             });
         }
 
         function spawnStickers() {
-            initObstacles(); // Load balls into collision system
+            initObstacles(); 
 
             const body = document.querySelector('body');
             const vw = window.innerWidth;
             const vh = window.innerHeight;
 
-            // Iterate through our shuffled deck
             stickerDeck.forEach(imgSrc => {
                 let attempts = 0;
                 let placed = false;
-
-                // Try 50 times to find a safe spot
                 while (!placed && attempts < 50) {
                     const zone = Math.floor(Math.random() * 4);
                     let topPct, leftPct;
-
-                    // Edge Bias Logic
                     if (zone === 0) { topPct = Math.random() * 15; leftPct = Math.random() * 90; } 
                     else if (zone === 1) { topPct = 80 + Math.random() * 15; leftPct = Math.random() * 90; } 
                     else if (zone === 2) { topPct = Math.random() * 90; leftPct = Math.random() * 15; } 
                     else { topPct = Math.random() * 90; leftPct = 80 + Math.random() * 15; } 
 
-                    const sizeVw = (Math.random() * 6) + 7; // Slightly smaller stickers
+                    const sizeVw = (Math.random() * 6) + 7;
                     const sizePx = (sizeVw / 100) * vw;
                     const topPx = (topPct / 100) * vh;
                     const leftPx = (leftPct / 100) * vw;
 
                     const newRect = { top: topPx, left: leftPx, right: leftPx + sizePx, bottom: topPx + sizePx };
                     
-                    // Check Collision against STICKERS AND BALLS
                     let collision = false;
                     for (let rect of placedRects) {
-                        // Add buffer (margin) to collision check so they don't touch
                         const buffer = 10; 
-                        if (newRect.left < rect.right + buffer && 
-                            newRect.right > rect.left - buffer && 
-                            newRect.top < rect.bottom + buffer && 
-                            newRect.bottom > rect.top - buffer) {
-                            collision = true; 
-                            break;
+                        if (newRect.left < rect.right + buffer && newRect.right > rect.left - buffer && newRect.top < rect.bottom + buffer && newRect.bottom > rect.top - buffer) {
+                            collision = true; break;
                         }
                     }
 
@@ -402,7 +373,6 @@
                         img.style.left = leftPct + 'vw';
                         img.style.width = sizeVw + 'vw';
                         img.style.transform = `rotate(${(Math.random() * 90) - 45}deg)`;
-                        
                         body.appendChild(img);
                         placedRects.push(newRect);
                         placed = true;
@@ -412,9 +382,37 @@
             });
         }
 
-        // Wait a split second for layout to settle before calculating ball positions
-        setTimeout(spawnStickers, 100);
+        // ==========================================
+        // INITIALIZATION
+        // ==========================================
+        window.onload = () => {
+            // 1. Stickers
+            setTimeout(spawnStickers, 100);
 
+            // 2. QUICK CONFETTI (Max 2-3 seconds)
+            setTimeout(() => {
+                var count = 200;
+                var defaults = {
+                    origin: { y: 0.7 },
+                    ticks: 100, /* Kills the confetti after about 1.5 seconds */
+                    gravity: 1.2, /* Makes it fall faster */
+                    decay: 0.94, /* Makes it fade out faster */
+                    startVelocity: 30
+                };
+
+                function fire(particleRatio, opts) {
+                    confetti(Object.assign({}, defaults, opts, {
+                        particleCount: Math.floor(count * particleRatio)
+                    }));
+                }
+
+                fire(0.25, { spread: 26, startVelocity: 55 });
+                fire(0.2, { spread: 60 });
+                fire(0.35, { spread: 100, decay: 0.91, scalar: 0.8 });
+                fire(0.1, { spread: 120, startVelocity: 25, decay: 0.92, scalar: 1.2 });
+                fire(0.1, { spread: 120, startVelocity: 45 });
+            }, 500); 
+        };
     </script>
 </body>
 </html>
