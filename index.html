@@ -42,7 +42,6 @@
             filter: contrast(110%);
         }
 
-        /* Paper Balls */
         .paper-ball {
             position: absolute;
             pointer-events: none;
@@ -56,6 +55,7 @@
             height: var(--book-height);
             perspective: 2000px;
             z-index: 10; 
+            transition: all 0.5s ease;
         }
 
         .book {
@@ -66,6 +66,22 @@
             box-shadow: 0 20px 50px rgba(0,0,0,0.4); 
         }
 
+        /* --- INTELLIGENT BACK COVER SYSTEM (The Fix) --- */
+        .book-base {
+            position: absolute;
+            top: 0;
+            height: 100%;
+            background: #e3d0b9; 
+            z-index: 0; 
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.1);
+            border-radius: 2px;
+        }
+        
+        /* Desktop: Standard Split */
+        .book-base.left { left: 0; width: 50%; border-right: 1px solid rgba(0,0,0,0.1); }
+        .book-base.right { right: 0; width: 50%; }
+
+        /* --- PAGES --- */
         .page {
             width: 50%;
             height: 100%;
@@ -146,7 +162,6 @@
             position: relative;
             transition: transform 0.3s ease;
         }
-        
         .photo-frame img { width: 100%; display: block; pointer-events: none; }
 
         .tape {
@@ -173,21 +188,46 @@
         /* --- MOBILE OVERRIDES --- */
         @media (max-width: 768px) {
             :root {
-                --book-width: 95vw;
-                --book-height: 120vw; /* Tall Portrait */
+                --book-width: 90vw;
+                --book-height: 45vh; 
+            }
+            .scene { margin-top: 40vh; }
+
+            /* --- FIXED BACK COVER FOR MOBILE --- */
+            .book-base.left {
+                /* OVERSIZED to create a border effect */
+                width: 106%; 
+                left: -3%; /* Center the extra width */
+                height: 105%; /* Stick out bottom */
+                top: -1%; /* Stick out top slightly */
+                
+                border-radius: 6px;
+                /* Thick 3D Lip at bottom */
+                border-bottom: 10px solid #c2b099; 
+                box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+            }
+            .book-base.right { display: none; } /* Hide right half */
+
+            .page {
+                width: 100%;
+                height: 100%;
+                right: auto;
+                top: 0;
+                transform-origin: top center; 
             }
 
-            h1 { font-size: 28px; }
-            p.caption { font-size: 14px; margin-top: 10px; }
-            
-            .letter-content h2 { font-size: 18px; margin-bottom: 10px; }
-            .letter-content p { font-size: 12px; line-height: 1.4; }
-            
-            .photo-frame { width: 80%; padding: 5px 5px 20px 5px; }
-            .tape { height: 20px; top: -10px; }
-            .page-num { font-size: 10px; bottom: 8px; right: 8px; }
+            .front { border-left: none; border-top: 1px solid #ddd; }
+            .back { transform: rotateX(180deg); border-right: none; border-bottom: 1px solid #ccc; }
+            .flipped { transform: rotateX(180deg); }
 
-            .paper-ball { transform: scale(0.7); }
+            h1 { font-size: 28px; }
+            p.caption { font-size: 16px; margin-top: 15px; }
+            .letter-content h2 { font-size: 20px; margin-bottom: 10px; }
+            .letter-content p { font-size: 13px; line-height: 1.4; }
+            .photo-frame { width: 75%; padding: 10px 10px 25px 10px; box-shadow: 2px 2px 15px rgba(0,0,0,0.15); }
+            .tape { height: 25px; top: -12px; }
+            .page-num { font-size: 12px; bottom: 10px; right: 10px; }
+            .paper-ball { transform: scale(0.6); }
         }
     </style>
 </head>
@@ -197,11 +237,10 @@
     <img src="images/ball.png" class="paper-ball" style="top: -10vh; right: -2vw; width: 18vw; transform: rotate(-45deg) scaleX(-1);">
     <img src="images/ball.png" class="paper-ball" style="bottom: 10vh; right: -8vw; width: 12vw; transform: rotate(90deg);">
 
-
     <div class="scene">
         <div class="book" id="bookContainer">
-            <div style="position: absolute; right: 0; width: 50%; height: 100%; background: #e3d0b9; z-index: 0; box-shadow: inset 5px 0 10px rgba(0,0,0,0.1);"></div>
-            <div style="position: absolute; left: 0; width: 50%; height: 100%; background: #e3d0b9; z-index: 0; box-shadow: inset -5px 0 10px rgba(0,0,0,0.1);"></div>
+            <div class="book-base left"></div>
+            <div class="book-base right"></div>
         </div>
     </div>
 
@@ -283,6 +322,7 @@
             }
 
             pageDiv.innerHTML = contentHTML;
+            // CRITICAL FIX: Insert pages BEFORE the back cover base divs
             bookContainer.insertBefore(pageDiv, bookContainer.children[bookContainer.children.length - 2]);
         });
 
@@ -310,45 +350,66 @@
         }
 
         // ==========================================
-        // SMART STICKER ENGINE
+        // SMART STICKER ENGINE (Mobile Zones)
         // ==========================================
-        const stickerTypes = [
-            'images/sticker1.png', 'images/sticker2.png', 'images/sticker3.png', 'images/sticker4.png'
-        ];
-        
+        const stickerTypes = ['images/sticker1.png', 'images/sticker2.png', 'images/sticker3.png', 'images/sticker4.png'];
         const maxRepetition = 4;
         let stickerDeck = [];
-        stickerTypes.forEach(src => {
-            for(let i=0; i<maxRepetition; i++) { stickerDeck.push(src); }
-        });
+        stickerTypes.forEach(src => { for(let i=0; i<maxRepetition; i++) stickerDeck.push(src); });
         stickerDeck.sort(() => Math.random() - 0.5);
 
         let placedRects = []; 
         function initObstacles() {
+            // 1. Balls
             const balls = document.querySelectorAll('.paper-ball');
             balls.forEach(ball => {
                 const rect = ball.getBoundingClientRect();
                 placedRects.push({ top: rect.top, left: rect.left, right: rect.right, bottom: rect.bottom });
             });
+
+            // 2. Book Protection (Mobile & Desktop)
+            const book = document.querySelector('.book');
+            const bookRect = book.getBoundingClientRect();
+            if(window.innerWidth < 768) {
+                // Manually protect the bottom half of the screen
+                const vh = window.innerHeight;
+                placedRects.push({ top: vh * 0.4, left: 0, right: window.innerWidth, bottom: vh });
+            } else {
+                placedRects.push({ top: bookRect.top, left: bookRect.left, right: bookRect.right, bottom: bookRect.bottom });
+            }
         }
 
         function spawnStickers() {
             initObstacles(); 
-
             const body = document.querySelector('body');
             const vw = window.innerWidth;
             const vh = window.innerHeight;
+            const isMobile = vw < 768;
 
             stickerDeck.forEach(imgSrc => {
                 let attempts = 0;
                 let placed = false;
                 while (!placed && attempts < 50) {
-                    const zone = Math.floor(Math.random() * 4);
                     let topPct, leftPct;
-                    if (zone === 0) { topPct = Math.random() * 15; leftPct = Math.random() * 90; } 
-                    else if (zone === 1) { topPct = 80 + Math.random() * 15; leftPct = Math.random() * 90; } 
-                    else if (zone === 2) { topPct = Math.random() * 90; leftPct = Math.random() * 15; } 
-                    else { topPct = Math.random() * 90; leftPct = 80 + Math.random() * 15; } 
+
+                    if (isMobile) {
+                        // --- MOBILE PLACEMENT: Top 30% or Bottom 10% Only ---
+                        const zone = Math.random() > 0.7 ? 1 : 0; 
+                        if (zone === 0) { 
+                            topPct = Math.random() * 30; 
+                            leftPct = Math.random() * 80 + 10; 
+                        } else {
+                            topPct = 90 + Math.random() * 5; 
+                            leftPct = Math.random() * 80 + 10;
+                        }
+                    } else {
+                        // --- DESKTOP PLACEMENT: Edges ---
+                        const zone = Math.floor(Math.random() * 4);
+                        if (zone === 0) { topPct = Math.random() * 15; leftPct = Math.random() * 90; } 
+                        else if (zone === 1) { topPct = 80 + Math.random() * 15; leftPct = Math.random() * 90; } 
+                        else if (zone === 2) { topPct = Math.random() * 90; leftPct = Math.random() * 15; } 
+                        else { topPct = Math.random() * 90; leftPct = 80 + Math.random() * 15; } 
+                    }
 
                     const sizeVw = (Math.random() * 6) + 7;
                     const sizePx = (sizeVw / 100) * vw;
@@ -386,26 +447,15 @@
         // INITIALIZATION
         // ==========================================
         window.onload = () => {
-            // 1. Stickers
             setTimeout(spawnStickers, 100);
 
-            // 2. QUICK CONFETTI (Max 2-3 seconds)
+            // Quick Confetti
             setTimeout(() => {
                 var count = 200;
-                var defaults = {
-                    origin: { y: 0.7 },
-                    ticks: 100, /* Kills the confetti after about 1.5 seconds */
-                    gravity: 1.2, /* Makes it fall faster */
-                    decay: 0.94, /* Makes it fade out faster */
-                    startVelocity: 30
-                };
-
+                var defaults = { origin: { y: 0.7 }, ticks: 100, gravity: 1.2, decay: 0.94, startVelocity: 30 };
                 function fire(particleRatio, opts) {
-                    confetti(Object.assign({}, defaults, opts, {
-                        particleCount: Math.floor(count * particleRatio)
-                    }));
+                    confetti(Object.assign({}, defaults, opts, { particleCount: Math.floor(count * particleRatio) }));
                 }
-
                 fire(0.25, { spread: 26, startVelocity: 55 });
                 fire(0.2, { spread: 60 });
                 fire(0.35, { spread: 100, decay: 0.91, scalar: 0.8 });
