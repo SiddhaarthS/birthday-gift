@@ -249,25 +249,26 @@
         // CONTENT
         // ==========================================
         const memories = [
-            { type: 'cover', title: 'Happy 31st!', text: 'To my best friend in the world.' },
+            { type: 'cover', title: 'Happy 31st!', text: 'To our best friend in the world.' , img: 'images/profile.jpg' },
             
-            { type: 'photo', img: 'images/photo1.jpg', text: 'Era 1: How it started' },
-            { type: 'photo', img: 'images/photo2.jpg', text: 'Era 2: The Core 4' },
-            { type: 'photo', img: 'images/photo3.jpg', text: 'Era 3: College Days' },
-            { type: 'photo', img: 'images/photo4.jpg', text: 'Era 4: Hiking Adventures' },
-            { type: 'photo', img: 'images/photo5.jpg', text: 'Era 5: Travel Diaries' },
-            { type: 'photo', img: 'images/photo6.jpg', text: 'Era 6: Fan Moments' },
-            { type: 'photo', img: 'images/photo7.jpg', text: 'Era 7: The Party Phase' },
-            { type: 'photo', img: 'images/photo8.jpg', text: 'Era 8: Major Milestones' },
-            { type: 'photo', img: 'images/photo9.jpg', text: 'Era 9: Pure Chaos' },
-            { type: 'photo', img: 'images/photo10.jpg', text: 'Era 10: Here & Now' },
+            { type: 'photo', img: 'images/photo1.jpg', text: 'We didn’t know this child would grow up to be our best friend!' },
+            { type: 'photo', img: 'images/photo2.jpg', text: 'Especially as he grew up, and started doing cool things (Needed some help with spelling though)' },
+            { type: 'photo', img: 'images/photo3.jpg', text: 'We were finally lucky enough meet each other, and “The Tripod” was formed. 100% a Canon Event!' },
+            { type: 'photo', img: 'images/photo4.jpg', text: 'We started to build cool shit together (even if it meant lugging around buckets and pipes)... ' },
+            { type: 'photo', img: 'images/photo5.jpg', text: 'We built LonePack together - a journey where YOU kept us together and on track.' },
+            { type: 'photo', img: 'images/photo6.jpg', text: 'You still continued crushing life in other arenas too! - from building ZohoSign to killing it at IIMB)' },
+            { type: 'photo', img: 'images/photo7.jpg', text: 'We watched as you started to travel and branch out and try new experiences (So proud of you for it!) ' },
+            { type: 'photo', img: 'images/photo8.jpg', text: 'Through this all you’ve continued being there for everyone who needs you and matters to you the most, such as your family…' },
+            { type: 'photo', img: 'images/photo9.jpg', text: '..and especially us. We love you Naveen! #Tripod4Eva <3' },
+            
 
-            { type: 'letter', title: 'From [Friend 1]', text: 'Dear Bestie,\n\nHappy 31st!...\n\nLove,\n[Name]' },
-            { type: 'letter', title: 'From [Friend 2]', text: 'Happy Birthday!\n\nYou rock.\n\nCheers,\n[Name]' },
-            { type: 'letter', title: 'From Mom', text: 'My dearest son,\n\nProud of you.\n\nLove,\nMom' },
-            { type: 'letter', title: 'From Dad', text: 'Son,\n\nKeep going.\n\n- Dad' },
+            { type: 'letter', title: 'From Samiya', text: 'Dear Naveen, \n\nWhen we first met each other 14 (!!)  years ago, who’d have thought we’d become such good friends?! Over these years, I’ve watched you continue to grow, and explore new things - concerts, camping, travelling and of course, the iconic Thailand trip! I’ve learnt so much about you but if I had to pick one word to describe you, I’d say “constant”. You have been my constant all these years, through my highest highs and lowest lows, and all the chaos in between. You may be on the quieter side, but you hide a steely determination - once you make up your mind about something, you just work at it - no matter how long it takes, or hard it is. I really admire that. I have so much to learn from you, but thankfully I have the rest of our lives to keep working at it. Thank you for being YOU, Naveen. I love you and appreciate you!\n\nLove,\nSamiya' },
+            { type: 'letter', title: 'From Siddhaarth', text: 'Dear Sensei!\n\nWhen I sat next to you on the first day of college on that eventful August morning that seems like a lifetime ago, little did I realize that I would be the start of something special. People can go their entire lives without finding a friend so loyal, a mentor so wise and kind, and a human being who leads with patience and empathy. How blessed must I be to have found all that in one soul! Thank you once again for everything you are, and everything you do! \n\nI love you so much ^_^\n\nLove, \nSid' },
+            { type: 'letter', title: 'From Mom', text: 'Dear Raja\n\nOn your birthday, Wishing you a wonderful birthday and the year ahead filled with love, happiness, success, and everything your heart aspires for. You are one of the greatest blessings of my life.\n\nNo matter how tall you grow or how far you go, you will always be my child and my greatest joy. You are my pillar of support and I am proud of you, and I will always be here cheering for you.\n\nWith all my love,\nAmma' },
+            { type: 'letter', title: 'From Dad', text: 'Our life revolves around your well being and  happiness. You take responsibilities without being told. Very balanced, kind and is close to our heart. Wishing you an excellent and wonderful birthday and year ahead.\n\n Appa' },
+            { type: 'letter', title: 'From Grandparents', text: 'Happy birthday to Raja Kuttan \n\nFrom Thatha and Amma' },
 
-            { type: 'cover', title: 'To the future!', text: 'Can\'t wait to celebrate with you.' }
+            { type: 'cover', title: 'To infinity and beyond!', img: 'images/photo10.jpg' , text: 'Let us build core memories together!',wide: true }
         ];
 
         // ==========================================
@@ -286,9 +287,25 @@
             let contentHTML = '';
             
             if (memory.type === 'cover') {
+                
+                // Logic: Is it a Wide Landscape photo? OR a Passport photo? OR No photo?
+                let imgHTML = '';
+                if (memory.img) {
+                    if (memory.wide) {
+                        // Landscape Style (Starry Night)
+                        imgHTML = `<img src="${memory.img}" style="width: 90%; height: auto; display: block; margin: 20px auto; border: 4px solid #fff; box-shadow: 0 4px 8px rgba(0,0,0,0.2);">`;
+                    } else {
+                        // Passport Style (Front Cover)
+                        imgHTML = `<img src="${memory.img}" style="width: 100px; height: 120px; object-fit: cover; border: 5px solid #fff; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin: 15px auto; transform: rotate(-3deg);">`;
+                    }
+                }
+
                 contentHTML = `
                     <div class="face front">
                         <h1>${memory.title}</h1>
+                        
+                        ${imgHTML}
+
                         <p class="caption">${memory.text}</p>
                         ${pageNum === 1 ? '<p style="font-size: 12px; margin-top: 30px; opacity: 0.7;">(Tap right side)</p>' : ''}
                         <div class="page-num">${pageNum}</div>
